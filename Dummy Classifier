@@ -1,0 +1,76 @@
+// Here are the important libraries to put in our program.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.dummy import DummyClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.tree import plot_tree
+
+
+stroke_data = pd.read_csv('stroke.csv') // ou can change this depending on your dataset.
+df = pd.DataFrame(stroke_data)
+
+//Print and describe
+print(df.head())
+print(df.dtypes)
+print(df.count())
+print(df.shape)
+print(df.describe())
+
+//Drop rows/columns
+df = df.drop(['id'], axis=1)
+df = df.dropna()
+
+// Identiy if it's numerical/categorical
+categorical_columns = ['gender', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
+print(categorical_columns)
+numerical_columns = df.select_dtypes(include=[np.float64, np.int64]).columns
+print(numerical_columns)
+
+// Impute
+impute_categorical = SimpleImputer(strategy="most_frequent")
+onehot_categorical = OneHotEncoder(handle_unknown='ignore')
+scaler_numerical = StandardScaler()
+
+// Creating Pipelines to Apply Transformation (Categorical)
+categorical_transformer = Pipeline(steps=[
+    ('impute', impute_categorical),
+    ('onehot', onehot_categorical)
+])
+
+// Create Pipelines to Apply Transformation (Numerical)
+numerical_transformer = Pipeline(steps=[
+    ('scale', scaler_numerical)
+])
+
+// Combine
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', categorical_transformer, categorical_columns),
+        ('num', numerical_transformer, numerical_columns)
+    ],
+    remainder="passthrough"
+)
+
+// Data after transformed.
+df_transformed = preprocessor.fit_transform(df)
+print("Data after transforming:")
+print(df_transformed)
+
+// Data after transformed.
+transformed_df = pd.DataFrame(df_transformed, columns=preprocessor.get_feature_names_out())
+print(transformed_df.head())
+
+// Put in another cell.
+label_encoder = LabelEncoder()
+label = label_encoder.fit_transform(df['stroke'])
+print("Encoded value of stroke after applying label encoder:")
+print(label)

@@ -1,4 +1,3 @@
-// Here are the important libraries to put in our program.
 
 import pandas as pd
 import numpy as np
